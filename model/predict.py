@@ -37,6 +37,7 @@ def predict_breed(image_path, model_path):
         outputs = model(image_tensor)
         _, predicted = torch.max(outputs, 1)
 
+    # Dictionary with breed annotations
     breed_annotations = {
         "n02085620": "Chihuahua",
         "n02085782": "Japanese Spaniel",
@@ -160,6 +161,10 @@ def predict_breed(image_path, model_path):
         "n02116738": "African Hunting Dog"
     }
 
-    # predicted_breed = breed_names[predicted.item()]
+    # Retrieve breed ID using the predicted index
+    breed_id = list(breed_annotations.keys())[predicted.item()]
+
+    # Retrieves the breed name using the breed ID
+    predicted_breed = breed_annotations[breed_id]
 
     return predicted_breed
