@@ -16,29 +16,22 @@ def preprocess_image(image_path):
     image_tensor = transform(image).unsqueeze(0)  # Add batch dimension
     return image_tensor
 
+
 def load_model(model_path):
-    # Assuming you used a ResNet-50 model; adjust as necessary
+
     model = models.resnet50(pretrained=True)
     num_ftrs = model.fc.in_features
-    # Update the classifier to match the number of classes you trained on
-    model.fc = torch.nn.Linear(num_ftrs, number_of_dog_breeds)  # Update `number_of_dog_breeds` accordingly
+
+    # Replace `number_of_dog_breeds` with the actual number of breeds
+    num_breeds = len(breed_annotations)  # Assuming you have a `breed_annotations` dictionary
+    model.fc = torch.nn.Linear(num_ftrs, num_breeds)
+
     model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
     model.eval()  # Set model to evaluation mode
     return model
 
-
-def predict_breed(image_path, model_path):
-    # Load the model
-    model = load_model(model_path)
-    # Preprocess the image
-    image_tensor = preprocess_image(image_path)
-    # Make the prediction
-    with torch.no_grad():
-        outputs = model(image_tensor)
-        _, predicted = torch.max(outputs, 1)
-
-    # Dictionary with breed annotations
-    breed_annotations = {
+# Dictionary with breed annotations
+breed_annotations = {
         "n02085620": "Chihuahua",
         "n02085782": "Japanese Spaniel",
         "n02085936": "Maltese Dog",
@@ -160,6 +153,16 @@ def predict_breed(image_path, model_path):
         "n02115913": "Dhole",
         "n02116738": "African Hunting Dog"
     }
+
+def predict_breed(image_path, model_path):
+    # Load the model
+    model = load_model(model_path)
+    # Preprocess the image
+    image_tensor = preprocess_image(image_path)
+    # Make the prediction
+    with torch.no_grad():
+        outputs = model(image_tensor)
+        _, predicted = torch.max(outputs, 1)
 
     # Retrieve breed ID using the predicted index
     breed_id = list(breed_annotations.keys())[predicted.item()]

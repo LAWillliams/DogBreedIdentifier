@@ -23,7 +23,7 @@ def predict_breed():
     image_file.save(image_path)
 
     # Perform breed prediction
-    predicted_breed = predict.predict_breed(image_path, 'model_checkpoint.pth')
+    predicted_breed = predict.predict_breed(image_path, 'model/best_model_dog_breeds.pth')
 
     # Render the prediction result template
     return render_template('result.html', predicted_breed=predicted_breed)
