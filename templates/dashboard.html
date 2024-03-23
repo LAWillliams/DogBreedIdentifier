@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Dashboard</h1>
+
+    <!-- Line Chart -->
+    <div style="width:600px; height:400px;">
+        <canvas id="line-chart"></canvas>
+    </div>
+
+    <!-- Bar Chart -->
+    <div style="width:600px; height:400px;">
+        <canvas id="bar-chart"></canvas>
+    </div>
+
+    <!-- Pie Chart -->
+    <div style="width:600px; height:400px;">
+        <canvas id="pie-chart"></canvas>
+    </div>
+
+    <script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function () {
+        var dashboardData = {{ data|tojson }};
+
+        var lineCtx = document.getElementById('line-chart').getContext('2d');
+        var lineChart = new Chart(lineCtx, {
+            type: 'line',
+            data: {
+                labels: dashboardData.lineChartData.labels,
+                datasets: [{
+                    label: dashboardData.lineChartData.datasets[0].label,
+                    data: dashboardData.lineChartData.datasets[0].data,
+                    fill: false,
+                    borderColor: 'rgb(75, 192, 192)',
+                    tension: 0.1
+                }]
+            }
+        });
+
+        var barCtx = document.getElementById('bar-chart').getContext('2d');
+        var barChart = new Chart(barCtx, {
+            type: 'bar',
+            data: {
+                labels: dashboardData.barChartData.labels,
+                datasets: [{
+                    label: dashboardData.barChartData.datasets[0].label,
+                    data: dashboardData.barChartData.datasets[0].data,
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        var pieCtx = document.getElementById('pie-chart').getContext('2d');
+        var pieChart = new Chart(pieCtx, {
+            type: 'pie',
+            data: {
+                labels: dashboardData.pieChartData.labels,
+                datasets: [{
+                    label: 'Pie Chart',
+                    data: dashboardData.pieChartData.data,
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)'
+                    ],
+                    hoverOffset: 4
+                }]
+            }
+        });
+    });
+    </script>
+
+</body>
+</html>
