@@ -25,9 +25,13 @@ def predict_breed():
     # Perform breed prediction
     predicted_breed = predict.predict_breed(image_path, 'model/best_model_dog_breeds.pth')
 
-    # Render the prediction result template
-    return render_template('result.html', predicted_breed=predicted_breed)
+    # Get breed distribution
+    breed_counts, breed_percentages = predict.get_breed_distribution('model/best_model_dog_breeds.pth')
 
+    # Render the prediction result template with breed distribution information
+    return render_template('result.html', predicted_breed=predicted_breed,
+                           breed_counts=breed_counts, breed_percentages=breed_percentages)
 
+# Runs flask app with security with HTTPS implementation
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080)
+    app.run(host='0.0.0.0', port=8080, ssl_context='adhoc')

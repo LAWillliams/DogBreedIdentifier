@@ -2,6 +2,10 @@ import torch
 import torchvision
 from torchvision import datasets, models, transforms
 import os
+import matplotlib.pyplot as plt
+import numpy as np
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+
 
 # Define transformations for the training data and validation data
 train_transforms = transforms.Compose([
@@ -17,6 +21,23 @@ val_transforms = transforms.Compose([
     transforms.ToTensor(),
     transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
 ])
+
+def preprocess_dataset(dataset_path):
+    # Parse the dataset
+    data = parse_dataset(dataset_path)
+
+    # Clean the dataset
+    cleaned_data = clean_dataset(data)
+
+    # Wrangle the dataset
+    wrangled_data = wrangle_dataset(cleaned_data)
+
+    return wrangled_data
+
+# Example usage of dataset preprocessing functions
+# dataset_path = 'path/to/your/dataset.csv'
+# preprocessed_data = preprocess_dataset(dataset_path)
+# # Further processing or utilization of preprocessed_data
 
 # Load the datasets with ImageFolder
 train_dataset = datasets.ImageFolder(r'C:\Users\lukea\PycharmProjects\dogBreedIdentifier\data\images', transform=train_transforms)
@@ -34,6 +55,67 @@ model.fc = torch.nn.Linear(num_ftrs, len(train_dataset.classes))
 # Move the model to the GPU if available
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 model = model.to(device)
+
+
+def parse_dataset(dataset_path):
+    # Implement parsing logic based on the dataset format
+    # Example: Parse dataset from a CSV file
+    import csv
+    data = []
+    with open(dataset_path, 'r') as file:
+        csv_reader = csv.reader(file)
+        for row in csv_reader:
+            data.append(row)
+    return data
+
+
+def clean_dataset(data):
+    # Implement cleaning logic based on the dataset
+    # Example: Remove rows with missing values
+    cleaned_data = []
+    for row in data:
+        if all(row):
+            cleaned_data.append(row)
+    return cleaned_data
+
+
+def wrangle_dataset(data):
+    # Implement wrangling logic based on the dataset
+    # Example: Convert categorical variables to numerical
+    wrangled_data = []
+    for row in data:
+        # Perform wrangling operations
+        wrangled_row = [float(value) if value.isdigit() else value for value in row]
+        wrangled_data.append(wrangled_row)
+    return wrangled_data
+
+def explore_dataset(dataset):
+    # Explore the dataset
+    print("Dataset size:", len(dataset))
+    print("Number of classes:", len(dataset.classes))
+    print("Class labels:", dataset.classes)
+
+    # Visualize sample images from the dataset
+    fig, axs = plt.subplots(2, 5, figsize=(12, 6))
+    axs = axs.flatten()
+    for i in range(10):
+        img, label = dataset[i]
+        axs[i].imshow(img.permute(1, 2, 0))
+        axs[i].set_title(dataset.classes[label])
+        axs[i].axis('off')
+    plt.tight_layout()
+    plt.show()
+
+def prepare_data(dataset):
+    # Prepare the data for training
+    data = []
+    labels = []
+    for img, label in dataset:
+        data.append(img.numpy())
+        labels.append(label)
+    data = np.array(data)
+    labels = np.array(labels)
+    return data, labels
 
 # Define the loss function and optimizer
 criterion = torch.nn.CrossEntropyLoss()
@@ -101,10 +183,40 @@ def train_model(model, criterion, optimizer, num_epochs=25):
 
     return model, best_val_accuracy
 
+# Function for evaluating accuracy of the trained model
+def evaluate_model(model, test_dataset):
+    model.eval()
+    test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=16, shuffle=False)
+
+    predictions = []
+    true_labels = []
+
+    with torch.no_grad():
+        for inputs, labels in test_loader:
+            inputs = inputs.to(device)
+            outputs = model(inputs)
+            _, preds = torch.max(outputs, 1)
+            predictions.extend(preds.cpu().numpy())
+            true_labels.extend(labels.cpu().numpy())
+
+    accuracy = accuracy_score(true_labels, predictions)
+    precision = precision_score(true_labels, predictions, average='weighted')
+    recall = recall_score(true_labels, predictions, average='weighted')
+    f1 = f1_score(true_labels, predictions, average='weighted')
+
+    print(f"Test Accuracy: {accuracy:.4f}")
+    print(f"Test Precision: {precision:.4f}")
+    print(f"Test Recall: {recall:.4f}")
+    print(f"Test F1-score: {f1:.4f}")
+
+# Explore the training dataset
+explore_dataset(train_dataset)
+
+# Prepare the training data
+train_data, train_labels = prepare_data(train_dataset)
 
 # Train the model and get the best validation accuracy
 model_ft, best_val_accuracy = train_model(model, criterion, optimizer, num_epochs=25)
-
 
 # Save the trained model
 torch.save({

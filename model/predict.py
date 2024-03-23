@@ -154,6 +154,20 @@ breed_annotations = {
         "n02116738": "African Hunting Dog"
     }
 
+# Descriptive method: Get breed count and distribution
+def get_breed_distribution(model_path):
+    model = load_model(model_path)
+    breed_counts = {breed: 0 for breed in breed_annotations.values()}
+
+    # Iterate over the breed annotations and count the occurrences
+    for breed_id, breed_name in breed_annotations.items():
+        breed_counts[breed_name] += 1
+
+    total_breeds = sum(breed_counts.values())
+    breed_percentages = {breed: count / total_breeds for breed, count in breed_counts.items()}
+
+    return breed_counts, breed_percentages
+
 def predict_breed(image_path, model_path):
     # Load the model
     model = load_model(model_path)
